@@ -20,7 +20,7 @@ ACCOUNT_ID = '2da2174e-f9fa-4e32-8b73-c1772b2837cb'
 
 # Telegram Credentials
 TOKEN = '6355023130:AAHkWi7GHJWu0O680QhlI4WDxVSDSyTAyms'
-TELEGRAM_USER = 'Anja'
+TELEGRAM_USER = 'Anja00001'
 
 # Heroku Credentials
 APP_URL = os.environ.get("APP_URL")
@@ -480,6 +480,7 @@ def Trade_Command(update: Update, context: CallbackContext) -> int:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
+    update.effective_message.reply_text(update.effective_message.chat.username)
     print(update.effective_message.chat.username)
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
