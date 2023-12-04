@@ -440,7 +440,7 @@ def help(update: Update, context: CallbackContext) -> None:
     update.effective_message.reply_text(commands)
     update.effective_message.reply_text(trade_example + market_execution_example + limit_example + note)
 
-    update.effective_message.reply_text(help_message)
+    update.effective_message.reply_text(update.effective_message.chat.username)
 
     print(update.effective_message.chat.username)
 
