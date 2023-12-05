@@ -402,8 +402,6 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
 
     return
 
-def handle_custom_trade_format
-
 
 # Command Handlers
 def welcome(update: Update, context: CallbackContext) -> None:
