@@ -316,7 +316,7 @@ def PlaceTrade(update: Update, context: CallbackContext) -> int:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-
+    context.user_data['trade'] = None
     # checks if the trade has already been parsed or not
     if(context.user_data['trade'] == None):
 
@@ -394,9 +394,7 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    print(update.effective_message.chat.username)
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
-        update.effective_message.reply_text(update.effective_message.chat.username)
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
 
@@ -441,11 +439,6 @@ def help(update: Update, context: CallbackContext) -> None:
     update.effective_message.reply_text(commands)
     update.effective_message.reply_text(trade_example + market_execution_example + limit_example + note)
 
-    update.effective_message.reply_text("Anthony?")
-    print(update.effective_message.chat.username)
-
-    print(update.effective_message)
-
     return
 
 def cancel(update: Update, context: CallbackContext) -> int:
@@ -482,12 +475,7 @@ def Trade_Command(update: Update, context: CallbackContext) -> int:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    update.effective_message.reply_text(update.effective_message.chat.username)
-    print('anthony')
-    print(update.effective_message.chat.username)
-    print('anthony2')
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
-        update.effective_message.reply_text(update.effective_message.chat.username)
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return ConversationHandler.END
     
@@ -506,9 +494,7 @@ def Calculation_Command(update: Update, context: CallbackContext) -> int:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    print(update.effective_message.chat.username)
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
-        update.effective_message.reply_text(update.effective_message.chat.username)
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return ConversationHandler.END
 
