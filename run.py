@@ -43,7 +43,63 @@ SYMBOLS = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY',
 RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
 
 
+
 # Helper Functions
+def ConvertSignal(signal: str) -> dict:
+
+    # converts message to list of strings for parsing
+    signal = signal.splitlines()
+    signal = [line.rstrip() for line in signal]
+
+    trade = {}
+
+    # determines the order type of the trade
+    if('LONG'.lower() in signal[0].lower()):
+        trade['OrderType'] = 'Buy'
+    
+    elif('SHORT'.lower() in signal[0].lower()):
+        trade['OrderType'] = 'Sell'
+
+    elif('ACHAT'.lower() in signal[0].lower()):
+        trade['OrderType'] = 'Buy'
+    
+    elif('VENTE'.lower() in signal[0].lower()):
+        trade['OrderType'] = 'Sell'
+
+    elif('Buy'.lower() in signal[0].lower()):
+        trade['OrderType'] = 'Buy'
+    
+    elif('Sell'.lower() in signal[0].lower()):
+        trade['OrderType'] = 'Sell'
+    
+    # returns an empty dictionary if an invalid order type was given
+    else:
+        return {}
+    
+    # extracts symbol from trade signal
+    trade['Symbol'] = (signal[0].split())[2].upper()
+    
+    # checks if the symbol is valid, if not, returns an empty dictionary
+    if(trade['Symbol'] not in SYMBOLS):
+        return {}
+    
+    # checks wheter or not to convert entry to float because of market exectution option ("NOW")
+
+    trade['Entry'] = (signal[0].split())[-1].replace(',', '.')
+    trade['StopLoss'] = float((signal[6].split())[-1].replace(',', '.'))
+    trade['TP'] = float((signal[2].split())[-1].replace(',', '.'))
+
+    order_type = trade['OrderType'].upper()
+    symbol = trade['Symbol']
+    entry = 'Entry NOW'
+    stop_loss = trade['StopLoss']
+    take_profit = trade['TP']
+
+    formatted_trade = f"{order_type} {symbol}\nEntry {entry}\nSL {stop_loss}\nTP {take_profit}"
+
+    return formatted_trade
+
+
 def ParseSignal(signal: str) -> dict:
     """Starts process of parsing signal and entering trade on MetaTrader account.
 
@@ -53,6 +109,8 @@ def ParseSignal(signal: str) -> dict:
     Returns:
         a dictionary that contains trade signal information
     """
+
+    signal = ConvertSignal(signal)
 
     # converts message to list of strings for parsing
     signal = signal.splitlines()
@@ -317,6 +375,11 @@ def PlaceTrade(update: Update, context: CallbackContext) -> int:
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
     context.user_data['trade'] = None
+
+    if(not(update.effective_message.chat.username == TELEGRAM_USER)):
+        update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
+        return
+
     # checks if the trade has already been parsed or not
     if(context.user_data['trade'] == None):
 
@@ -515,24 +578,8 @@ def main() -> None:
     # get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    # message handler
-    dp.add_handler(CommandHandler("start", welcome))
-
-    # help command handler
-    dp.add_handler(CommandHandler("help", help))
-
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("trade", Trade_Command), CommandHandler("calculate", Calculation_Command)],
-        states={
-            TRADE: [MessageHandler(Filters.text & ~Filters.command, PlaceTrade)],
-            CALCULATE: [MessageHandler(Filters.text & ~Filters.command, CalculateTrade)],
-            DECISION: [CommandHandler("yes", PlaceTrade), CommandHandler("no", cancel)]
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
-
-    # conversation handler for entering trade or calculating trade information
-    dp.add_handler(conv_handler)
+    # message handler for all messages that are not included in conversation handler
+    dp.add_handler(MessageHandler(Filters.regex(r"^(BUY|SELL)"), PlaceTrade))
 
     # message handler for all messages that are not included in conversation handler
     dp.add_handler(MessageHandler(Filters.regex(r"^(BUY|SELL)"), PlaceTrade))
