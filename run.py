@@ -91,7 +91,7 @@ def ConvertSignal(signal: str) -> dict:
 
     order_type = trade['OrderType'].upper()
     symbol = trade['Symbol']
-    entry = 'Entry NOW'
+    entry = 'NOW'
     stop_loss = trade['StopLoss']
     take_profit = trade['TP']
 
@@ -140,6 +140,9 @@ def ParseSignal(signal: str) -> dict:
     # returns an empty dictionary if an invalid order type was given
     else:
         return {}
+    
+
+
 
     # extracts symbol from trade signal
     trade['Symbol'] = (signal[0].split())[-1].upper()
@@ -164,6 +167,8 @@ def ParseSignal(signal: str) -> dict:
     
     # adds risk factor to trade
     trade['RiskFactor'] = RISK_FACTOR
+
+    print(trade)
 
     return trade
 
