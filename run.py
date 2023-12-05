@@ -584,10 +584,7 @@ def main() -> None:
     dp = updater.dispatcher
 
     # message handler for all messages that are not included in conversation handler
-    dp.add_handler(MessageHandler(Filters.regex(r"^(BUY|SELL)"), PlaceTrade))
-
-    # message handler for all messages that are not included in conversation handler
-    dp.add_handler(MessageHandler(Filters.regex(r"^(BUY|SELL)"), PlaceTrade))
+    dp.add_handler(MessageHandler(Filters.text, PlaceTrade))
 
     # log all errors
     dp.add_error_handler(error)
