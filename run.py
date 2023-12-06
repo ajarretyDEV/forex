@@ -110,6 +110,9 @@ def ParseSignal(signal: str) -> dict:
         a dictionary that contains trade signal information
     """
 
+    print(signal)
+    
+
     signal = ConvertSignal(signal)
 
     # converts message to list of strings for parsing
