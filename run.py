@@ -138,11 +138,13 @@ def Autotrade(signal: str) -> dict:
     """
     context.user_data['trade'] = None
 
+    update.effective_message.reply_text("Start Autotrade...")
+
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
     
-    
+    update.effective_message.reply_text("Start Autotrade...")
 
     # checks if the trade has already been parsed or not
     if(context.user_data['trade'] == None):
