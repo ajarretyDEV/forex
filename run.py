@@ -99,6 +99,83 @@ def ConvertSignal(signal: str) -> dict:
 
     return formatted_trade
 
+def AnalyseSignal(signal: str) -> dict:
+
+    trade = {}
+    trades = []
+
+    symbol_pattern = re.compile(r'(XAUUSD|gold)', re.IGNORECASE)
+    buy_pattern = re.compile(r'(buy|achat|achète)', re.IGNORECASE)
+    sell_pattern = re.compile(r'(vente|sell|vends)', re.IGNORECASE)
+
+    symbol_match = symbol_pattern.search(signal)
+    buy_match = buy_pattern.search(signal)
+    sell_match = sell_pattern.search(signal)
+
+    if symbol_match:
+        trade['symbol'] = 'XAUUSD'
+
+    if buy_match:
+        trade['OrderType'] = 'BUY'
+
+    if sell_match:
+        trade['OrderType'] = 'SELL'
+
+    trade['RiskFactor'] = 0.03
+    trade['Entry'] = 'NOW'
+
+    trades = [trade, trade]
+
+    return trades
+
+def Autotrade(signal: str) -> dict:
+
+    """Parses trade and places on MetaTrader account.   
+    
+    Arguments:
+        update: update from Telegram
+        context: CallbackContext object that stores commonly used objects in handler callbacks
+    """
+    context.user_data['trade'] = None
+
+    if(not(update.effective_message.chat.username == TELEGRAM_USER)):
+        update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
+        return
+
+    # checks if the trade has already been parsed or not
+    if(context.user_data['trade'] == None):
+
+        try: 
+            # parses signal from Telegram message
+            
+            trades = AnalyseSignal(signal)
+            
+            # checks if there was an issue with parsing the trade
+            if(not(trades)):
+                raise Exception('Invalid Trade')
+
+            # sets the user context trade equal to the parsed trade
+            context.user_data['trades'] = trades
+            update.effective_message.reply_text("Trades Successfully Parsed! 🥳\nConnecting to MetaTrader ... \n(May take a while) ⏰")
+        
+        except Exception as error:
+            logger.error(f'Error: {error}')
+            errorMessage = f"There was an error parsing this trade 😕\n\nError: {error}\n\nPlease re-enter trade with this format:\n\nBUY/SELL SYMBOL\nEntry \nSL \nTP \n\nOr use the /cancel to command to cancel this action."
+            update.effective_message.reply_text(errorMessage)
+
+            # returns to TRADE state to reattempt trade parsing
+            return TRADE
+    
+    # attempts connection to MetaTrader and places trade
+    for index, trade in trades:
+        asyncio.run(ConnectMetaTrader(update, trade, True))
+        update.effective_message.reply_text("Trades {index} set ! ⏰")
+
+    
+    # removes trade from user context data
+    context.user_data['trade'] = None
+
+    return ConversationHandler.END
 
 def ParseSignal(signal: str) -> dict:
     """Starts process of parsing signal and entering trade on MetaTrader account.
@@ -110,11 +187,9 @@ def ParseSignal(signal: str) -> dict:
         a dictionary that contains trade signal information
     """
 
-    print(signal)
-    
+    trades = AnalyseSignal(signal)
 
-    signal = ConvertSignal(signal)
-
+    '''
     # converts message to list of strings for parsing
     signal = signal.splitlines()
     signal = [line.rstrip() for line in signal]
@@ -171,9 +246,9 @@ def ParseSignal(signal: str) -> dict:
     # adds risk factor to trade
     trade['RiskFactor'] = RISK_FACTOR
 
-    print(trade)
+    '''
 
-    return trade
+    return trades
 
 def GetTradeInformation(update: Update, trade: dict, balance: float) -> None:
     """Calculates information from given trade including stop loss and take profit in pips, posiition size, and potential loss/profit.
@@ -587,7 +662,7 @@ def main() -> None:
     dp = updater.dispatcher
 
     # message handler for all messages that are not included in conversation handler
-    dp.add_handler(MessageHandler(Filters.text, PlaceTrade))
+    dp.add_handler(MessageHandler(Filters.text, Autotrade))
 
     # log all errors
     dp.add_error_handler(error)
