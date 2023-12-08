@@ -172,7 +172,7 @@ def Autotrade(signal: str) -> dict:
             return TRADE
     
     # attempts connection to MetaTrader and places trade
-    for index, trade in trades:
+    for index, trade in enumerate(trades):
         asyncio.run(ConnectMetaTrader(update, trade, True))
         update.effective_message.reply_text("Trades {index} set ! ⏰")
 
