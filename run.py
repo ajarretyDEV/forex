@@ -141,15 +141,20 @@ def Autotrade(signal: str) -> dict:
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
+    
+    
 
     # checks if the trade has already been parsed or not
     if(context.user_data['trade'] == None):
 
+        update.effective_message.reply_text("Start Autotrade...")
+
         try: 
             # parses signal from Telegram message
-            
+            update.effective_message.reply_text("Start Analysis...")
             trades = AnalyseSignal(signal)
             
+            update.effective_message.reply_text("Start Analysis2...")
             # checks if there was an issue with parsing the trade
             if(not(trades)):
                 raise Exception('Invalid Trade')
