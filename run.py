@@ -42,7 +42,7 @@ SYMBOLS = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY',
 # RISK FACTOR
 RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
 
-def autotrade(signal: str) -> dict:
+def autotrade(update: Update, context: CallbackContext) -> None:
 
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
@@ -50,8 +50,7 @@ def autotrade(signal: str) -> dict:
     
     update.effective_message.reply_text("Start autotrading bot")
 
-    trades = {}
-    return trades
+    return
 
 def GetTradeInformation(update: Update, trade: dict, balance: float) -> None:
     """Calculates information from given trade including stop loss and take profit in pips, posiition size, and potential loss/profit.
