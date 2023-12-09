@@ -42,14 +42,27 @@ SYMBOLS = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY',
 # RISK FACTOR
 RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
 
+def ParseSignal(signal: str) -> dict:
+
+    trade = []
+    return trade
+
 def autotrade(update: Update, context: CallbackContext) -> None:
 
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
     
-    update.effective_message.reply_text("Start autotrading bot")
-    update.effective_message.reply_text(update.effective_message.text)
+    update.effective_message.reply_text("Start autotrading bot...")
+    update.effective_message.reply_text("Try to parse you signal...")
+
+    signal = ParseSignal(update.effective_message.text)
+
+    update.effective_message.reply_text("Signal parsed...")
+
+    update.effective_message.reply_text("Place trade in progress...") 
+    
+    update.effective_message.reply_text("Trade sucessfully send...") 
 
     return
 
