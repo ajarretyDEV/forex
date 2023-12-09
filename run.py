@@ -128,61 +128,16 @@ def AnalyseSignal(signal: str) -> dict:
 
     return trades
 
-def Autotrade(signal: str) -> dict:
-
-    """Parses trade and places on MetaTrader account.   
-    
-    Arguments:
-        update: update from Telegram
-        context: CallbackContext object that stores commonly used objects in handler callbacks
-    """
-    context.user_data['trade'] = None
-
-    update.effective_message.reply_text("Start Autotrade...")
+def autotrade(signal: str) -> dict:
 
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
     
-    update.effective_message.reply_text("Start Autotrade...")
+    update.effective_message.reply_text("Start autotrading bot")
 
-    # checks if the trade has already been parsed or not
-    if(context.user_data['trade'] == None):
-
-        update.effective_message.reply_text("Start Autotrade...")
-
-        try: 
-            # parses signal from Telegram message
-            update.effective_message.reply_text("Start Analysis...")
-            trades = AnalyseSignal(signal)
-            
-            update.effective_message.reply_text("Start Analysis2...")
-            # checks if there was an issue with parsing the trade
-            if(not(trades)):
-                raise Exception('Invalid Trade')
-
-            # sets the user context trade equal to the parsed trade
-            context.user_data['trades'] = trades
-            update.effective_message.reply_text("Trades Successfully Parsed! 🥳\nConnecting to MetaTrader ... \n(May take a while) ⏰")
-        
-        except Exception as error:
-            logger.error(f'Error: {error}')
-            errorMessage = f"There was an error parsing this trade 😕\n\nError: {error}\n\nPlease re-enter trade with this format:\n\nBUY/SELL SYMBOL\nEntry \nSL \nTP \n\nOr use the /cancel to command to cancel this action."
-            update.effective_message.reply_text(errorMessage)
-
-            # returns to TRADE state to reattempt trade parsing
-            return TRADE
-    
-    # attempts connection to MetaTrader and places trade
-    for index, trade in enumerate(trades):
-        asyncio.run(ConnectMetaTrader(update, trade, True))
-        update.effective_message.reply_text("Trades {index} set ! ⏰")
-
-    
-    # removes trade from user context data
-    context.user_data['trade'] = None
-
-    return ConversationHandler.END
+    trades = {}
+    return trades
 
 def ParseSignal(signal: str) -> dict:
     """Starts process of parsing signal and entering trade on MetaTrader account.
@@ -668,8 +623,14 @@ def main() -> None:
     # get the dispatcher to register handlers
     dp = updater.dispatcher
 
+    # message handler
+    dp.add_handler(CommandHandler("start", welcome))
+
+    # help command handler
+    dp.add_handler(CommandHandler("help", help))
+
     # message handler for all messages that are not included in conversation handler
-    dp.add_handler(MessageHandler(Filters.text, Autotrade))
+    dp.add_handler(MessageHandler(Filters.text, autotrade))
 
     # log all errors
     dp.add_error_handler(error)
