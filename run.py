@@ -41,7 +41,7 @@ CALCULATE, TRADE, DECISION = range(3)
 symbol_pattern = re.compile(r'(XAUUSD|BTCUSD|EURUSD|GBPUSD|USDCHF|USDJPY|AUDUSD|NZDUSD|USDCAD|EURGBP|EURAUD|EURCAD|EURCHF|EURJPY|EURNZD|GBPEUR|GBPJPY|GBPAUD|GBPCAD|GBPCHF|GBPNZD|JPYAUD|JPYCAD|JPYCHF|JPYEUR|JPYGBP|JPYNZD|AUDCAD|AUDCHF|AUDEUR|AUDGBP|AUDJPY|AUDNZD|CADAUD|CADCHF|CADEUR|CADGBP|CADJPY|CADNZD|CHFAUD|CHFCAD|CHFEUR|CHFGBP|CHFJPY|CHFNZD|NZDAUD|NZDCAD|NZDCHF|NZDEUR|NZDJPY|NZDGBP|USDBRL|USDCNH|USDCZK|USDDKK|USDHKD|USDHUF|USDINR|USDMXN|USDNOK|USDPLN|USDRON|USDRUB|USDSAR|USDSEK|USDSGD|USDTHB|USDTRY|USDZAR|EURCZK|EURDKK|EURHKD|EURHUF|EURMXN|EURNOK|EURPLN|EURRON|EURRUB|EURSEK|EURSGD|EURTRY|EURZAR|GBPDKK|GBPHKD|GBPHUF|GBPNOK|GBPPLN|GBPRON|GBPSEK|GBPSGD|GBPTRY|GBPZAR|CHFDKK|CHFHKD|CHFHUF|CHFNOK|CHFPLN|CHFSEK|CHFSGD|CHFTRY|CHFZAR|AUDHKD|AUDSGD|CADHKD|CADSGD|NZDHKD|NZDSGD|HKDJPY|MXNJPY|NOKJPY|NOKSEK|SEKJPY|SGDCHF|SGDHKD|SGDJPY|TRYJPY|ZARJPY|gold)', re.IGNORECASE)
 
 # RISK FACTOR
-RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
+RISK_FACTOR = 0.03
 
 def ParseSignal(signal: str) -> dict:
 
@@ -65,6 +65,8 @@ def ParseSignal(signal: str) -> dict:
         trade['OrderType'] = 'SELL'
 
     trade['Entry'] = 'NOW'
+
+    trade['RiskFactor'] = RISK_FACTOR
 
     return trade
 
@@ -98,7 +100,8 @@ def autotrade(update: Update, context: CallbackContext) -> int:
         # returns to TRADE state to reattempt trade parsing
         return TRADE
     
-    #asyncio.run(ConnectMetaTrader(update, trade, True))
+    
+    asyncio.run(ConnectMetaTrader(update, trade, True))
     
     return ConversationHandler.END
 
@@ -246,10 +249,12 @@ async def ConnectMetaTrader(update: Update, trade: dict, enterTrade: bool):
                 trade['Entry'] = float(price['ask'])
 
         # produces a table with trade information
-        GetTradeInformation(update, trade, account_information['balance'])
+        #GetTradeInformation(update, trade, account_information['balance'])
             
         # checks if the user has indicated to enter trade
         if(enterTrade == True):
+
+            print(trade)
 
             # enters trade on to MetaTrader account
             update.effective_message.reply_text("Entering trade on MetaTrader Account ... 👨🏾‍💻")
@@ -258,32 +263,32 @@ async def ConnectMetaTrader(update: Update, trade: dict, enterTrade: bool):
                 # executes buy market execution order
                 if(trade['OrderType'] == 'Buy'):
                     for takeProfit in trade['TP']:
-                        result = await connection.create_market_buy_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['StopLoss'], takeProfit)
+                        result = await connection.create_market_buy_order(trade['Symbol'], trade['PositionSize'])
 
                 # executes buy limit order
                 elif(trade['OrderType'] == 'Buy Limit'):
                     for takeProfit in trade['TP']:
-                        result = await connection.create_limit_buy_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
+                        result = await connection.create_limit_buy_order(trade['Symbol'], trade['PositionSize'], trade['Entry'])
 
                 # executes buy stop order
                 elif(trade['OrderType'] == 'Buy Stop'):
                     for takeProfit in trade['TP']:
-                        result = await connection.create_stop_buy_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
+                        result = await connection.create_stop_buy_order(trade['Symbol'], trade['PositionSize'], trade['Entry'])
 
                 # executes sell market execution order
                 elif(trade['OrderType'] == 'Sell'):
                     for takeProfit in trade['TP']:
-                        result = await connection.create_market_sell_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['StopLoss'], takeProfit)
+                        result = await connection.create_market_sell_order(trade['Symbol'], trade['PositionSize'])
 
                 # executes sell limit order
                 elif(trade['OrderType'] == 'Sell Limit'):
                     for takeProfit in trade['TP']:
-                        result = await connection.create_limit_sell_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
+                        result = await connection.create_limit_sell_order(trade['Symbol'], trade['PositionSize'], trade['Entry'])
 
                 # executes sell stop order
                 elif(trade['OrderType'] == 'Sell Stop'):
                     for takeProfit in trade['TP']:
-                        result = await connection.create_stop_sell_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
+                        result = await connection.create_stop_sell_order(trade['Symbol'], trade['PositionSize'], trade['Entry'])
                 
                 # sends success message to user
                 update.effective_message.reply_text("Trade entered successfully! 💰")
