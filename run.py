@@ -42,6 +42,7 @@ symbol_pattern = re.compile(r'(XAUUSD|BTCUSD|EURUSD|GBPUSD|USDCHF|USDJPY|AUDUSD|
 
 # RISK FACTOR
 RISK_FACTOR = 0.03
+POSITION_SIZE = 0.03
 
 def ParseSignal(signal: str) -> dict:
 
@@ -72,7 +73,7 @@ def ParseSignal(signal: str) -> dict:
 
     trade['Entry'] = 'NOW'
 
-    trade['RiskFactor'] = RISK_FACTOR
+    trade['PositionSize'] = POSITION_SIZE
 
     return trade
 
