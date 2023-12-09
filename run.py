@@ -47,22 +47,36 @@ def ParseSignal(signal: str) -> dict:
     trade = []
     return trade
 
-def autotrade(update: Update, context: CallbackContext) -> None:
+def autotrade(update: Update, context: CallbackContext) -> int:
 
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
     
     update.effective_message.reply_text("Start autotrading bot...")
-    update.effective_message.reply_text("Try to parse you signal...")
 
-    signal = ParseSignal(update.effective_message.text)
+    try: 
+        # parses signal from Telegram message
+        trade = ParseSignal(update.effective_message.text)
+        
+        # checks if there was an issue with parsing the trade
+        if(not(trade)):
+            raise Exception('Invalid Trade')
 
-    update.effective_message.reply_text("Signal parsed...")
+        # sets the user context trade equal to the parsed trade
+        update.effective_message.reply_text("Trade Successfully Parsed! 🥳\nConnecting to MetaTrader ... \n(May take a while) ⏰")
+        
+    except Exception as error:
+        logger.error(f'Error: {error}')
+        errorMessage = f"There was an error parsing this trade 😕\n\nError: {error}\n\nPlease re-enter trade with this format:\n\nBUY/SELL SYMBOL\nEntry \nSL \nTP \n\nOr use the /cancel to command to cancel this action."
+        update.effective_message.reply_text(errorMessage)
 
-    update.effective_message.reply_text("Place trade in progress...") 
+        # returns to TRADE state to reattempt trade parsing
+        return TRADE
     
-    update.effective_message.reply_text("Trade sucessfully send...") 
+    #asyncio.run(ConnectMetaTrader(update, trade, True))
+    
+    return ConversationHandler.END
 
     return
 
