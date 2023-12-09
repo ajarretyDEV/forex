@@ -3,6 +3,7 @@ import asyncio
 import logging
 import math
 import os
+import re
 
 try:
     from typing import Literal
@@ -37,14 +38,32 @@ logger = logging.getLogger(__name__)
 CALCULATE, TRADE, DECISION = range(3)
 
 # allowed FX symbols
-SYMBOLS = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY', 'CHFJPY', 'EURAUD', 'EURCAD', 'EURCHF', 'EURGBP', 'EURJPY', 'EURNZD', 'EURUSD', 'GBPAUD', 'GBPCAD', 'GBPCHF', 'GBPJPY', 'GBPNZD', 'GBPUSD', 'NOW', 'NZDCAD', 'NZDCHF', 'NZDJPY', 'NZDUSD', 'USDCAD', 'USDCHF', 'USDJPY', 'XAGUSD', 'XAUUSD']
+symbol_pattern = re.compile(r'(XAUUSD|BTCUSD|EURUSD|GBPUSD|USDCHF|USDJPY|AUDUSD|NZDUSD|USDCAD|EURGBP|EURAUD|EURCAD|EURCHF|EURJPY|EURNZD|GBPEUR|GBPJPY|GBPAUD|GBPCAD|GBPCHF|GBPNZD|JPYAUD|JPYCAD|JPYCHF|JPYEUR|JPYGBP|JPYNZD|AUDCAD|AUDCHF|AUDEUR|AUDGBP|AUDJPY|AUDNZD|CADAUD|CADCHF|CADEUR|CADGBP|CADJPY|CADNZD|CHFAUD|CHFCAD|CHFEUR|CHFGBP|CHFJPY|CHFNZD|NZDAUD|NZDCAD|NZDCHF|NZDEUR|NZDJPY|NZDGBP|USDBRL|USDCNH|USDCZK|USDDKK|USDHKD|USDHUF|USDINR|USDMXN|USDNOK|USDPLN|USDRON|USDRUB|USDSAR|USDSEK|USDSGD|USDTHB|USDTRY|USDZAR|EURCZK|EURDKK|EURHKD|EURHUF|EURMXN|EURNOK|EURPLN|EURRON|EURRUB|EURSEK|EURSGD|EURTRY|EURZAR|GBPDKK|GBPHKD|GBPHUF|GBPNOK|GBPPLN|GBPRON|GBPSEK|GBPSGD|GBPTRY|GBPZAR|CHFDKK|CHFHKD|CHFHUF|CHFNOK|CHFPLN|CHFSEK|CHFSGD|CHFTRY|CHFZAR|AUDHKD|AUDSGD|CADHKD|CADSGD|NZDHKD|NZDSGD|HKDJPY|MXNJPY|NOKJPY|NOKSEK|SEKJPY|SGDCHF|SGDHKD|SGDJPY|TRYJPY|ZARJPY|gold)', re.IGNORECASE)
 
 # RISK FACTOR
 RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
 
 def ParseSignal(signal: str) -> dict:
 
+    symbol_pattern = re.compile(r'(XAUUSD|gold)', re.IGNORECASE)
+    buy_pattern = re.compile(r'(buy|achat|achète)', re.IGNORECASE)
+    sell_pattern = re.compile(r'(vente|sell|vends)', re.IGNORECASE)
+
+    symbol_match = symbol_pattern.search(signal)
+    buy_match = buy_pattern.search(signal)
+    sell_match = sell_pattern.search(signal)
+
     trade = []
+
+    if symbol_match:
+        trade['symbol'] = symbol_match.group(0).upper()
+
+    if buy_match:
+        trade['action'] = 'BUY'
+
+    if sell_match:
+        trade['action'] = 'SELL'
+
     return trade
 
 def autotrade(update: Update, context: CallbackContext) -> int:
@@ -58,6 +77,10 @@ def autotrade(update: Update, context: CallbackContext) -> int:
     try: 
         # parses signal from Telegram message
         trade = ParseSignal(update.effective_message.text)
+
+        parsed = ''.join(trade)
+
+        update.effective_message.reply_text(parsed)
         
         # checks if there was an issue with parsing the trade
         if(not(trade)):
