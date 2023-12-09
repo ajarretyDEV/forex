@@ -42,92 +42,6 @@ SYMBOLS = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY',
 # RISK FACTOR
 RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
 
-
-
-# Helper Functions
-def ConvertSignal(signal: str) -> dict:
-
-    # converts message to list of strings for parsing
-    signal = signal.splitlines()
-    signal = [line.rstrip() for line in signal]
-
-    trade = {}
-
-    # determines the order type of the trade
-    if('LONG'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Buy'
-    
-    elif('SHORT'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Sell'
-
-    elif('ACHAT'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Buy'
-    
-    elif('VENTE'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Sell'
-
-    elif('Buy'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Buy'
-    
-    elif('Sell'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Sell'
-    
-    # returns an empty dictionary if an invalid order type was given
-    else:
-        return {}
-    
-    # extracts symbol from trade signal
-    trade['Symbol'] = (signal[0].split())[2].upper()
-    
-    # checks if the symbol is valid, if not, returns an empty dictionary
-    if(trade['Symbol'] not in SYMBOLS):
-        return {}
-    
-    # checks wheter or not to convert entry to float because of market exectution option ("NOW")
-
-    trade['Entry'] = (signal[0].split())[-1].replace(',', '.')
-    trade['StopLoss'] = float((signal[6].split())[-1].replace(',', '.'))
-    trade['TP'] = float((signal[2].split())[-1].replace(',', '.'))
-
-    order_type = trade['OrderType'].upper()
-    symbol = trade['Symbol']
-    entry = 'NOW'
-    stop_loss = trade['StopLoss']
-    take_profit = trade['TP']
-
-    formatted_trade = f"{order_type} {symbol}\nEntry {entry}\nSL {stop_loss}\nTP {take_profit}"
-
-    return formatted_trade
-
-def AnalyseSignal(signal: str) -> dict:
-
-    trade = {}
-    trades = []
-
-    symbol_pattern = re.compile(r'(XAUUSD|gold)', re.IGNORECASE)
-    buy_pattern = re.compile(r'(buy|achat|achète)', re.IGNORECASE)
-    sell_pattern = re.compile(r'(vente|sell|vends)', re.IGNORECASE)
-
-    symbol_match = symbol_pattern.search(signal)
-    buy_match = buy_pattern.search(signal)
-    sell_match = sell_pattern.search(signal)
-
-    if symbol_match:
-        trade['symbol'] = 'XAUUSD'
-
-    if buy_match:
-        trade['OrderType'] = 'BUY'
-
-    if sell_match:
-        trade['OrderType'] = 'SELL'
-
-    trade['RiskFactor'] = 0.03
-    trade['Entry'] = 'NOW'
-
-    trades = [trade, trade]
-
-    return trades
-
 def autotrade(signal: str) -> dict:
 
     if(not(update.effective_message.chat.username == TELEGRAM_USER)):
@@ -137,79 +51,6 @@ def autotrade(signal: str) -> dict:
     update.effective_message.reply_text("Start autotrading bot")
 
     trades = {}
-    return trades
-
-def ParseSignal(signal: str) -> dict:
-    """Starts process of parsing signal and entering trade on MetaTrader account.
-
-    Arguments:
-        signal: trading signal
-
-    Returns:
-        a dictionary that contains trade signal information
-    """
-
-    trades = AnalyseSignal(signal)
-
-    '''
-    # converts message to list of strings for parsing
-    signal = signal.splitlines()
-    signal = [line.rstrip() for line in signal]
-
-    trade = {}
-
-    # determines the order type of the trade
-    if('Buy Limit'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Buy Limit'
-
-    elif('Sell Limit'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Sell Limit'
-
-    elif('Buy Stop'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Buy Stop'
-
-    elif('Sell Stop'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Sell Stop'
-
-    elif('Buy'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Buy'
-    
-    elif('Sell'.lower() in signal[0].lower()):
-        trade['OrderType'] = 'Sell'
-    
-    # returns an empty dictionary if an invalid order type was given
-    else:
-        return {}
-    
-
-
-
-    # extracts symbol from trade signal
-    trade['Symbol'] = (signal[0].split())[-1].upper()
-    
-    # checks if the symbol is valid, if not, returns an empty dictionary
-    if(trade['Symbol'] not in SYMBOLS):
-        return {}
-    
-    # checks wheter or not to convert entry to float because of market exectution option ("NOW")
-    if(trade['OrderType'] == 'Buy' or trade['OrderType'] == 'Sell'):
-        trade['Entry'] = (signal[1].split())[-1]
-    
-    else:
-        trade['Entry'] = float((signal[1].split())[-1])
-    
-    trade['StopLoss'] = float((signal[2].split())[-1])
-    trade['TP'] = [float((signal[3].split())[-1])]
-
-    # checks if there's a fourth line and parses it for TP2
-    if(len(signal) > 4):
-        trade['TP'].append(float(signal[4].split()[-1]))
-    
-    # adds risk factor to trade
-    trade['RiskFactor'] = RISK_FACTOR
-
-    '''
-
     return trades
 
 def GetTradeInformation(update: Update, trade: dict, balance: float) -> None:
@@ -456,7 +297,6 @@ def PlaceTrade(update: Update, context: CallbackContext) -> int:
 
     return ConversationHandler.END
 
-def CalculateTrade(update: Update, context: CallbackContext) -> int:
     """Parses trade and places on MetaTrader account.   
     
     Arguments:
@@ -576,7 +416,6 @@ def error(update: Update, context: CallbackContext) -> None:
 
     return
 
-def Trade_Command(update: Update, context: CallbackContext) -> int:
     """Asks user to enter the trade they would like to place.
 
     Arguments:
@@ -595,7 +434,6 @@ def Trade_Command(update: Update, context: CallbackContext) -> int:
 
     return TRADE
 
-def Calculation_Command(update: Update, context: CallbackContext) -> int:
     """Asks user to enter the trade they would like to calculate trade information for.
 
     Arguments:
