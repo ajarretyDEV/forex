@@ -53,7 +53,7 @@ def ParseSignal(signal: str) -> dict:
     buy_match = buy_pattern.search(signal)
     sell_match = sell_pattern.search(signal)
 
-    trade = []
+    trade = {}
 
     if symbol_match:
         trade['symbol'] = symbol_match.group(0).upper()
