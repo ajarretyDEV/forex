@@ -58,6 +58,9 @@ def ParseSignal(signal: str) -> dict:
     if symbol_match:
         trade['Symbol'] = symbol_match.group(0).upper()
 
+    if trade['Symbol'] == 'GOLD':
+        trade['Symbol'] = trade['Symbol'].replace('gold', 'XAUUSD')
+
     if buy_match:
         trade['OrderType'] = 'BUY'
 
