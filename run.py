@@ -45,7 +45,7 @@ RISK_FACTOR = 0.03
 
 def ParseSignal(signal: str) -> dict:
 
-    symbol_pattern = re.compile(r'(XAUUSD|gold|BTCUSD)', re.IGNORECASE)
+    symbol_pattern = re.compile(r'(XAUUSD|gold|BTCUSD|btc)', re.IGNORECASE)
     buy_pattern = re.compile(r'(buy|achat|achète)', re.IGNORECASE)
     sell_pattern = re.compile(r'(vente|sell|vends)', re.IGNORECASE)
 
