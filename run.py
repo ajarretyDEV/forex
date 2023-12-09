@@ -49,6 +49,7 @@ def autotrade(update: Update, context: CallbackContext) -> None:
         return
     
     update.effective_message.reply_text("Start autotrading bot")
+    update.effective_message.reply_text(update.effective_message.text)
 
     return
 
