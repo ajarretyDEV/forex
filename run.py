@@ -56,13 +56,15 @@ def ParseSignal(signal: str) -> dict:
     trade = {}
 
     if symbol_match:
-        trade['symbol'] = symbol_match.group(0).upper()
+        trade['Symbol'] = symbol_match.group(0).upper()
 
     if buy_match:
-        trade['action'] = 'BUY'
+        trade['OrderType'] = 'BUY'
 
     if sell_match:
-        trade['action'] = 'SELL'
+        trade['OrderType'] = 'SELL'
+
+    trade['Entry'] = 'NOW'
 
     return trade
 
@@ -79,7 +81,6 @@ def autotrade(update: Update, context: CallbackContext) -> int:
         # parses signal from Telegram message
         trade = ParseSignal(update.effective_message.text)
 
-        update.effective_message.reply_text("test")
         update.effective_message.reply_text(trade)
         
         # checks if there was an issue with parsing the trade
