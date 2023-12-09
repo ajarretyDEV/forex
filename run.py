@@ -73,14 +73,14 @@ def autotrade(update: Update, context: CallbackContext) -> int:
         return
     
     update.effective_message.reply_text("Start autotrading bot...")
+    update.effective_message.reply_text(update.effective_message.text)
 
     try: 
         # parses signal from Telegram message
         trade = ParseSignal(update.effective_message.text)
 
-        parsed = ''.join(trade)
-
-        update.effective_message.reply_text(parsed)
+        update.effective_message.reply_text("test")
+        update.effective_message.reply_text(trade)
         
         # checks if there was an issue with parsing the trade
         if(not(trade)):
